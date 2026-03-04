@@ -72,8 +72,10 @@ jobs:
         # Validate JSON structure in AZURE_CREDENTIALS secret before login
       - name: Validate Azure credentials secret format
         shell: bash
+        env:
+          AZURE_CREDENTIALS: ${{ secrets.AZURE_CREDENTIALS }}
         run: |
-          echo '${{ secrets.AZURE_CREDENTIALS }}' | jq -e . > /dev/null
+          jq -e . > /dev/null <<< "$AZURE_CREDENTIALS"
 
       #Login in your azure subscription using a service principal (credentials stored as GitHub Secret in repo)
       - name: Azure Login
