@@ -5,11 +5,11 @@ on: workflow_dispatch
 
 #Environment variables https://docs.github.com/en/actions/learn-github-actions/environment-variables
 env:
-  RESOURCE_GROUP: rg-eshoponweb-region1
+  RESOURCE-GROUP: rg-eshoponweb-region1
   LOCATION: REGION1
-  TEMPLATE_FILE: infra/webapp.bicep
-  SUBSCRIPTION_ID: 5e85c53e-2046-43a8-8daf-32ee54b78418
-  WEBAPP_NAME: devops-webapp--60185151
+  TEMPLATE-FILE: infra/webapp.bicep
+  SUBSCRIPTION-ID: 5e85c53e-2046-43a8-8daf-32ee54b78418
+  WEBAPP-NAME: devops-webapp--60185151
 
 jobs:
   #Build, test and publish .net web project in repository
@@ -46,8 +46,8 @@ jobs:
         uses: actions/upload-artifact@v5
         with:
           name: bicep-template
-          path: ${{ env.TEMPLATE_FILE }}
-          
+          path: ${{ env.TEMPLATE-FILE }}
+
   # Use Bicep to deploy infrastructure + Publish webapp
   deploy:
     runs-on: ubuntu-latest
@@ -69,14 +69,6 @@ jobs:
           name: bicep-template
           path: bicep-template
 
-        # Validate JSON structure in AZURE_CREDENTIALS secret before login
-      - name: Validate Azure credentials secret format
-        shell: bash
-        env:
-          AZURE_CREDENTIALS: ${{ secrets.AZURE_CREDENTIALS }}
-        run: |
-          jq -e . > /dev/null <<< "$AZURE_CREDENTIALS"
-
       #Login in your azure subscription using a service principal (credentials stored as GitHub Secret in repo)
       - name: Azure Login
         uses: azure/login@v2
@@ -87,11 +79,10 @@ jobs:
       - name: deploy
         uses: azure/arm-deploy@v2
         with:
-          scope: resourcegroup
-          subscriptionId: ${{ env.SUBSCRIPTION_ID }}
-          resourceGroupName: ${{ env.RESOURCE_GROUP }}
+          subscriptionId: ${{ env.SUBSCRIPTION-ID }}
+          resourceGroupName: ${{ env.RESOURCE-GROUP }}
           template: bicep-template/webapp.bicep
-          parameters: "webAppName=${{ env.WEBAPP_NAME }} location=${{ env.LOCATION }}"
+          parameters: "webAppName=${{ env.WEBAPP-NAME }} location=${{ env.LOCATION }}"
           failOnStdErr: false
 
       # Publish website to Azure App Service (WebApp)
@@ -101,7 +92,7 @@ jobs:
         uses: Azure/webapps-deploy@v3
         with:
           type: ZIP
-          app-name: ${{ env.WEBAPP_NAME  }}
+          app-name: ${{ env.WEBAPP-NAME  }}
           package: .net-app/app.zip
 
       # Publish website to Azure App Service using CLI (WebApp)
@@ -109,4 +100,4 @@ jobs:
         uses: Azure/cli@v2
         with:
           inlineScript: |
-            az webapp deploy --name ${{ env.WEBAPP_NAME }} --resource-group ${{ env.RESOURCE_GROUP }} --src-path .net-app/app.zip --type zip
+            az webapp deploy --name ${{ env.WEBAPP-NAME }} --resource-group ${{ env.RESOURCE-GROUP }} --src-path .net-app/app.zip --type zip
